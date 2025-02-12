@@ -43,7 +43,19 @@ public class Test implements Callable<Integer> {
 
     @Override
     public Integer call() throws Exception {
-        Config config = Config.read(output, in);
+        final Config config = Config.read(output, in);
+        final Path tsDir = Path.of("mandrel-integration-tests");
+        if (Files.exists(tsDir)) {
+            MoreFiles.deleteRecursively(tsDir);
+        }
+        final List<String> git = List.of("git", "clone", "--branch", "testing-more-runtime-images",
+                "https://github.com/Karm/mandrel-integration-tests.git");
+        final Process gitProcess = runCommand(git, new File("."));
+        gitProcess.waitFor(3, TimeUnit.MINUTES); // Generous. It's a tiny repo.
+        if (gitProcess.exitValue() != 0) {
+            System.err.println("Failed to clone the mandrel-integration-tests repository.");
+            return gitProcess.exitValue();
+        }
         for (Config.ImageConfig image : config.images) {
             if (image.isMultiArch()) {
                 System.out
@@ -53,11 +65,7 @@ public class Test implements Callable<Integer> {
                 System.out
                         .println("\uD83D\uDD25\tTesting single-arch image " + image.fullname(config));
             }
-            final Path tsDir = Path.of("mandrel-integration-tests");
-            if (Files.exists(tsDir)) {
-                MoreFiles.deleteRecursively(tsDir);
-            }
-            final List<String> git = List.of("git", "clone", "https://github.com/Karm/mandrel-integration-tests.git");
+
             // Maven calls JBang and that calls Maven. That Maven calls Maven again. It's Maven all the way down.
             final List<String> testsuite = List.of(
                     "mvn", "clean", "verify",
@@ -65,14 +73,8 @@ public class Test implements Callable<Integer> {
                     "-Dtest=AppReproducersTest#imageioAWTContainerTest",
                     "-Dquarkus.native.builder-image=" + image.fullname(config),
                     "-Dquarkus.native.container-runtime=docker",
-                    "-Drootless.container-runtime=true",
+                    "-Drootless.container-runtime=false",
                     "-Ddocker.with.sudo=false");
-            final Process gitProcess = runCommand(git, new File("."));
-            gitProcess.waitFor(3, TimeUnit.MINUTES); // Generous. It's a tiny repo.
-            if (gitProcess.exitValue() != 0) {
-                System.err.println("Failed to clone the mandrel-integration-tests repository.");
-                return gitProcess.exitValue();
-            }
             final Process testsuiteProcess = runCommand(testsuite, tsDir.toFile());
             testsuiteProcess.waitFor(20, TimeUnit.MINUTES); // We might be downloading 6+ base images on first run.
             if (testsuiteProcess.exitValue() != 0) {
