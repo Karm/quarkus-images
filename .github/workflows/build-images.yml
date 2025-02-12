@@ -76,6 +76,8 @@ jobs:
         echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
     - name: Build ${{ matrix.name }}
       run: mvn install --projects ${{ matrix.modules }} --also-make -DskipTests ${{ matrix.args }}
+    - name: Test ${{ matrix.name }}
+      run: mvn install --projects ${{ matrix.modules }} -DskipTests -Ptest ${{ matrix.args }}
     - name: Print ${{ matrix.name}}
       if: always()
       run: docker images
