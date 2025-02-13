@@ -4,18 +4,22 @@
 package io.quarkus.images;
 
 import com.google.common.io.MoreFiles;
+import com.sun.security.auth.module.UnixSystem;
 import io.quarkus.images.config.Config;
 import picocli.CommandLine;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Stream;
 
 @CommandLine.Command(name = "test")
 public class Test implements Callable<Integer> {
@@ -65,7 +69,7 @@ public class Test implements Callable<Integer> {
                 System.out
                         .println("\uD83D\uDD25\tTesting single-arch image " + image.fullname(config));
             }
-
+            updateUID();
             // Maven calls JBang and that calls Maven. That Maven calls Maven again. It's Maven all the way down.
             final List<String> testsuite = List.of(
                     "mvn", "clean", "verify",
@@ -79,11 +83,11 @@ public class Test implements Callable<Integer> {
             testsuiteProcess.waitFor(20, TimeUnit.MINUTES); // We might be downloading 6+ base images on first run.
             if (testsuiteProcess.exitValue() != 0) {
                 System.err.println("Failed to run the mandrel-integration-tests.");
-                return testsuiteProcess.exitValue();
             }
             // Spit out the log for debugging. File is usually around 20K.
             System.out.println(Files.readString(Path.of("mandrel-integration-tests", "testsuite", "target", "archived-logs",
                     "org.graalvm.tests.integration.AppReproducersTest", "imageioAWTContainerTest", "build-and-run.log")));
+            return testsuiteProcess.exitValue();
         }
         return 0;
     }
@@ -96,6 +100,27 @@ public class Test implements Callable<Integer> {
                 .inheritIO()
                 .directory(directory);
         return processBuilder.start();
+    }
+
+    /**
+     * Update the UID in the Dockerfiles to match the current user.
+     *
+     * @throws IOException
+     */
+    public static void updateUID() throws IOException {
+        final Path dockerfiles = Path.of("mandrel-integration-tests", "apps", "imageio");
+        final String newUID = String.valueOf(new UnixSystem().getUid());
+        try (Stream<Path> paths = Files.find(dockerfiles, 1,
+                (path, attr) -> path.getFileName().toString().matches("Dockerfile.*") && attr.isRegularFile())) {
+            paths.forEach(path -> {
+                try {
+                    Files.writeString(path, Files.readString(path, StandardCharsets.UTF_8).replaceAll("1000", newUID),
+                            StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                } catch (IOException e) {
+                    System.err.println("Failed to replace UID in file " + path + ": " + e.getMessage());
+                }
+            });
+        }
     }
 
     public static void main(String... args) {
