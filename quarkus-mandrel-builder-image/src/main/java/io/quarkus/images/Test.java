@@ -10,16 +10,19 @@ import picocli.CommandLine;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
+
+import static java.nio.charset.StandardCharsets.UTF_8;
+import static java.nio.file.StandardOpenOption.CREATE;
+import static java.nio.file.StandardOpenOption.TRUNCATE_EXISTING;
 
 @CommandLine.Command(name = "test")
 public class Test implements Callable<Integer> {
@@ -108,16 +111,21 @@ public class Test implements Callable<Integer> {
      * @throws IOException
      */
     public static void updateUID() throws IOException {
-        final Path dockerfiles = Path.of("mandrel-integration-tests", "apps", "imageio");
-        final String newUID = String.valueOf(new UnixSystem().getUid());
-        try (Stream<Path> paths = Files.find(dockerfiles, 1,
-                (path, attr) -> path.getFileName().toString().matches("Dockerfile.*") && attr.isRegularFile())) {
+        final Path dir = Path.of("mandrel-integration-tests", "apps", "imageio");
+        final UnixSystem s = new UnixSystem();
+        final String newUID = String.valueOf(s.getUid());
+        final String newGID = String.valueOf(s.getGid());
+        final Pattern p = Pattern.compile("Dockerfile.*");
+        try (Stream<Path> paths = Files.find(dir, 1,
+                (path, attr) -> attr.isRegularFile() && p.matcher(path.getFileName().toString()).matches())) {
             paths.forEach(path -> {
                 try {
-                    Files.writeString(path, Files.readString(path, StandardCharsets.UTF_8).replaceAll("1000", newUID),
-                            StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
+                    Files.writeString(path, Files.readString(path, UTF_8)
+                                    .replace("1000", newUID)
+                                    .replace("root", newGID),
+                            UTF_8, CREATE, TRUNCATE_EXISTING);
                 } catch (IOException e) {
-                    System.err.println("Failed to replace UID in file " + path + ": " + e.getMessage());
+                    System.err.println("Failed to replace UID/GID in file " + path + ": " + e.getMessage());
                 }
             });
         }
