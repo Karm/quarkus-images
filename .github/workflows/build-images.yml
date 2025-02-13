@@ -74,12 +74,17 @@ jobs:
         echo "Status:    ${{ steps.buildx.outputs.status }}"
         echo "Flags:     ${{ steps.buildx.outputs.flags }}"
         echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-    - name: Build ${{ matrix.name }}
-      run: mvn install --projects ${{ matrix.modules }} --also-make -DskipTests ${{ matrix.args }}
+#    - name: Build ${{ matrix.name }}
+#      run: mvn install --projects ${{ matrix.modules }} --also-make -DskipTests ${{ matrix.args }}
     - name: Test ${{ matrix.name }}
       env:
         DOCKER_GHA_BUILDX: true
-      run: mvn clean install --projects ${{ matrix.modules }} -DskipTests -Ptest ${{ matrix.args }}
+      run: |
+        sudo chgrp $(id -g) . -R
+        sudo chown $(id -u) . -R
+        sudo chmod ugo+rw . -R
+        sudo chmod g+s . -R  
+        mvn clean install --projects ${{ matrix.modules }} -DskipTests -Ptest ${{ matrix.args }}
     - name: Print ${{ matrix.name}}
       if: always()
       run: docker images
