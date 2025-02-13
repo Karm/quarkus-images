@@ -77,6 +77,8 @@ jobs:
     - name: Build ${{ matrix.name }}
       run: mvn install --projects ${{ matrix.modules }} --also-make -DskipTests ${{ matrix.args }}
     - name: Test ${{ matrix.name }}
+      env:
+        DOCKER_GHA_BUILDX: true
       run: mvn clean install --projects ${{ matrix.modules }} -DskipTests -Ptest ${{ matrix.args }}
     - name: Print ${{ matrix.name}}
       if: always()

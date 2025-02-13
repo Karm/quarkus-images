@@ -80,7 +80,7 @@ public class Test implements Callable<Integer> {
                     "-Drootless.container-runtime=false",
                     "-Ddocker.with.sudo=false");
             final Process testsuiteProcess = runCommand(testsuite, tsDir.toFile());
-            testsuiteProcess.waitFor(20, TimeUnit.MINUTES); // We might be downloading 6+ base images on first run.
+            testsuiteProcess.waitFor(10, TimeUnit.MINUTES); // We might be downloading 6+ base images on first run.
             if (testsuiteProcess.exitValue() != 0) {
                 System.err.println("Failed to run the mandrel-integration-tests.");
             }
