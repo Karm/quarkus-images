@@ -81,19 +81,22 @@ jobs:
         DOCKER_GHA_BUILDX: true
 # Just debugging the buildx docker :-(
       run: |
+        set -x
+        id
+        ls -lah
         git clone --branch testing-more-runtime-images https://github.com/Karm/mandrel-integration-tests.git
         pushd mandrel-integration-tests/apps/imageio
         mvn package
-        ls
+        ls -lah
         docker run -u $(id -u):$(id -g) -t --entrypoint java -v $(pwd):/project:z quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21 -Djava.awt.headless=true -agentlib:native-image-agent=config-output-dir=src/main/resources/META-INF/native-image -jar target/imageio.jar
-        ls
+        ls -lah
         rm -rf ./mytest*
         docker run -u $(id -u):$(id -g) -t --entrypoint jar -v $(pwd):/project:z quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21 uf target/imageio.jar -C src/main/resources/ META-INF
         docker run -u $(id -u):$(id -g) -t -v $(pwd):/project:z quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21 -H:+UnlockExperimentalVMOptions -H:-UnlockExperimentalVMOptions -J-Djava.awt.headless=true --no-fallback -jar target/imageio.jar target/imageio
         docker build --network=host -f Dockerfile.ubi8 -t my-imageio-runner_ubi8 --load .
-        ls
+        ls -lah
         docker run -u $(id -u):$(id -g) -t -v $(pwd):/work:z my-imageio-runner_ubi8 /work/target/imageio -Djava.home=. -Djava.awt.headless=true
-        ls
+        ls -lah
 #        sudo chgrp $(id -g) . -R
 #        sudo chown $(id -u) . -R
 #        sudo chmod ugo+rw . -R
