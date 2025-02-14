@@ -74,14 +74,15 @@ jobs:
         echo "Status:    ${{ steps.buildx.outputs.status }}"
         echo "Flags:     ${{ steps.buildx.outputs.flags }}"
         echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-    - name: Build ${{ matrix.name }}
-      run: mvn install --projects ${{ matrix.modules }} --also-make -DskipTests ${{ matrix.args }}
+#    - name: Build ${{ matrix.name }}
+#      run: mvn install --projects ${{ matrix.modules }} --also-make -DskipTests ${{ matrix.args }}
     - name: Test ${{ matrix.name }}
       env:
         DOCKER_GHA_BUILDX: true
 # Just debugging the buildx docker :-(
       run: |
         set -x
+        set -e
         id
         ls -lah
         git clone --branch testing-more-runtime-images https://github.com/Karm/mandrel-integration-tests.git
@@ -93,15 +94,18 @@ jobs:
         rm -rf ./mytest*
         docker run -u $(id -u):$(id -g) -t --entrypoint jar -v $(pwd):/project:z quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21 uf target/imageio.jar -C src/main/resources/ META-INF
         docker run -u $(id -u):$(id -g) -t -v $(pwd):/project:z quay.io/quarkus/ubi-quarkus-mandrel-builder-image:jdk-21 -H:+UnlockExperimentalVMOptions -H:-UnlockExperimentalVMOptions -J-Djava.awt.headless=true --no-fallback -jar target/imageio.jar target/imageio
+        find . -name "Dockerfile.*" -exec sed -i "s~1000~$(id -u)~g" {} \;
+        find . -name "Dockerfile.*" -exec sed -i "s~root~$(id -g)~g" {} \;
+        cat Dockerfile*
         docker build --network=host -f Dockerfile.ubi8 -t my-imageio-runner_ubi8 --load .
         ls -lah
         docker run -u $(id -u):$(id -g) -t -v $(pwd):/work:z my-imageio-runner_ubi8 /work/target/imageio -Djava.home=. -Djava.awt.headless=true
         ls -lah
-#        sudo chgrp $(id -g) . -R
-#        sudo chown $(id -u) . -R
-#        sudo chmod ugo+rw . -R
-#        sudo chmod g+s . -R
-#        mvn clean install --projects ${{ matrix.modules }} -DskipTests -Ptest ${{ matrix.args }}
+#       sudo chgrp $(id -g) . -R
+#       sudo chown $(id -u) . -R
+#       sudo chmod ugo+rw . -R
+#       sudo chmod g+s . -R
+#       mvn clean install --projects ${{ matrix.modules }} -DskipTests -Ptest ${{ matrix.args }}
     - name: Print ${{ matrix.name}}
       if: always()
       run: docker images
