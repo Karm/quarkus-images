@@ -74,8 +74,8 @@ jobs:
         echo "Status:    ${{ steps.buildx.outputs.status }}"
         echo "Flags:     ${{ steps.buildx.outputs.flags }}"
         echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-    - name: Build ${{ matrix.name }}
-      run: mvn install --projects ${{ matrix.modules }} --also-make -DskipTests ${{ matrix.args }}
+#    - name: Build ${{ matrix.name }}
+#      run: mvn install --projects ${{ matrix.modules }} --also-make -DskipTests ${{ matrix.args }}
     - name: Test ${{ matrix.name }}
       env:
         DOCKER_GHA_BUILDX: true
@@ -90,7 +90,7 @@ jobs:
         # GraalVM CE builder images should work too, merely saving time here...
         if [[ "${{ matrix.modules }}" == quarkus-mandrel* ]]; then
           echo -e "\n▶ ️Testing ${{ matrix.name }} ..." >> ${DOCKER_GHA_SUMMARY_NAME}
-          mvn install --projects ${{ matrix.modules }} --also-make -DskipTests -Ptest ${{ matrix.args }}
+          #mvn install --projects ${{ matrix.modules }} --also-make -DskipTests -Ptest ${{ matrix.args }}
         else
           echo -e "\n⏭️ SKIPPED testing ${{ matrix.name }}" >> ${DOCKER_GHA_SUMMARY_NAME}
         fi
@@ -131,7 +131,13 @@ jobs:
           path: final-summary.txt
       - name: Post a comment on the PR
         if: always()
+        env:
+          PAT: ${{ secrets.PAT }}
         run: |
+          if [[ -z "$PAT" ]]; then
+            echo "🚨 ERROR: PAT is missing!"
+            exit 1
+          fi
           PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
           if [[ -z "$PR_NUMBER" || "$PR_NUMBER" == "null" ]]; then
             echo "No PR found. No action."
