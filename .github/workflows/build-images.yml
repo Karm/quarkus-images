@@ -58,22 +58,22 @@ jobs:
       with:
         distribution: 'temurin'
         java-version: '17'
-    - name: Set up QEMU
-      uses: docker/setup-qemu-action@v3
-      with:
-        platforms: amd64,arm64
-    - name: Set up Docker Buildx
-      id: buildx
-      uses: docker/setup-buildx-action@v3
-      with:
-        install: true
-    - name: Inspect builder
-      run: |
-        echo "Name:      ${{ steps.buildx.outputs.name }}"
-        echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
-        echo "Status:    ${{ steps.buildx.outputs.status }}"
-        echo "Flags:     ${{ steps.buildx.outputs.flags }}"
-        echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
+#    - name: Set up QEMU
+#      uses: docker/setup-qemu-action@v3
+#      with:
+#        platforms: amd64,arm64
+#    - name: Set up Docker Buildx
+#      id: buildx
+#      uses: docker/setup-buildx-action@v3
+#      with:
+#        install: true
+#    - name: Inspect builder
+#      run: |
+#        echo "Name:      ${{ steps.buildx.outputs.name }}"
+#        echo "Endpoint:  ${{ steps.buildx.outputs.endpoint }}"
+#        echo "Status:    ${{ steps.buildx.outputs.status }}"
+#        echo "Flags:     ${{ steps.buildx.outputs.flags }}"
+#        echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
 #    - name: Build ${{ matrix.name }}
 #      run: mvn install --projects ${{ matrix.modules }} --also-make -DskipTests ${{ matrix.args }}
     - name: Test ${{ matrix.name }}
@@ -135,7 +135,7 @@ jobs:
           PAT: ${{ secrets.PAT }}
         run: |
           if [[ -z "$PAT" ]]; then
-            echo "🚨 ERROR: PAT is missing!"
+            echo "Error: PAT is missing!"
             exit 1
           fi
           PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
@@ -145,7 +145,7 @@ jobs:
           fi
           # just escape json to avoid trouble with API
           COMMENT_BODY=$(jq -Rs '.' < final-summary.txt)
-          curl -s -X POST -H "Authorization: token ${{ secrets.PAT }}" \
-            -H "Accept: application/vnd.github.v3+json" \
+          curl -s -X POST -H "Authorization: Bearer ${{ secrets.PAT }}" \
+            -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
             -d "{\"body\": $COMMENT_BODY}"
