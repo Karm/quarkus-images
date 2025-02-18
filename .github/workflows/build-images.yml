@@ -139,7 +139,7 @@ jobs:
           fi
           # just escape json to avoid trouble with API
           COMMENT_BODY=$(jq -Rs '.' < final-summary.txt)
-          curl -s -X POST -H "Authorization: token ${{ secrets.QUARKUS_IMAGES_PR_COMMENTS }}" \
+          curl -s -X POST -H "Authorization: token ${{ secrets.PAT }}" \
             -H "Accept: application/vnd.github.v3+json" \
             https://api.github.com/repos/${{ github.repository }}/issues/$PR_NUMBER/comments \
             -d "{\"body\": $COMMENT_BODY}"
