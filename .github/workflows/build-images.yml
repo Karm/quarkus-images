@@ -30,9 +30,9 @@ jobs:
           - name: "mandrel builder images (latest)"
             modules: "quarkus-mandrel-builder-image"
             args: ""
-          - name: "mandrel builder images (23.0.x)"
-            modules: "quarkus-mandrel-builder-image"
-            args: "-Pmandrel-23.0.x"
+    #          - name: "mandrel builder images (23.0.x)"
+    #            modules: "quarkus-mandrel-builder-image"
+    #            args: "-Pmandrel-23.0.x"
     #          - name: "mandrel builder images (22.x)"
     #            modules: "quarkus-mandrel-builder-image"
     #            args: "-Pmandrel-22.x"
@@ -155,3 +155,4 @@ jobs:
         with:
           name: comment-data-${{ github.event.pull_request.number }}
           path: comment-data.json
+
