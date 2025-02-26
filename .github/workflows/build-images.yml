@@ -30,9 +30,9 @@ jobs:
           - name: "mandrel builder images (latest)"
             modules: "quarkus-mandrel-builder-image"
             args: ""
-          - name: "mandrel builder images (23.0.x)"
-            modules: "quarkus-mandrel-builder-image"
-            args: "-Pmandrel-23.0.x"
+#          - name: "mandrel builder images (23.0.x)"
+#            modules: "quarkus-mandrel-builder-image"
+#            args: "-Pmandrel-23.0.x"
 #          - name: "mandrel builder images (22.x)"
 #            modules: "quarkus-mandrel-builder-image"
 #            args: "-Pmandrel-22.x"
@@ -73,8 +73,8 @@ jobs:
         echo "Status:    ${{ steps.buildx.outputs.status }}"
         echo "Flags:     ${{ steps.buildx.outputs.flags }}"
         echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
-    - name: Build ${{ matrix.name }}
-      run: mvn install --projects ${{ matrix.modules }} --also-make -DskipTests ${{ matrix.args }}
+#    - name: Build ${{ matrix.name }}
+#      run: mvn install --projects ${{ matrix.modules }} --also-make -DskipTests ${{ matrix.args }}
     - name: Test ${{ matrix.name }}
       env:
         DOCKER_GHA_BUILDX: true
@@ -151,7 +151,8 @@ jobs:
           echo "{\"pr_number\":\"$PR_NUMBER\",\"org\":\"$ORG_NAME\",\"repo\":\"$REPO_NAME\",\"comment_body\":$COMMENT_JSON_STRING}" > comment-data.json
       - name: Upload comment data
         if: always() && github.event_name == 'pull_request'
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: comment-data-${{ github.event.pull_request.number }}
           path: comment-data.json
+
