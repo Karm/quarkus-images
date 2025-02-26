@@ -1,21 +1,53 @@
 name: Post Comment
 
 on:
-  repository_dispatch:
-    types: [post_comment]
+  pull_request_target:
+    branches:
+      - main
 
 jobs:
   post-comment:
     runs-on: ubuntu-latest
     steps:
-      - name: Post test summary
+      - name: Attempt to download comment data with retries
+        id: download
+        run: |
+          MAX_ATTEMPTS=5
+          ATTEMPT=1
+          PR_NUMBER=${{ github.event.pull_request.number }}
+          ARTIFACT_NAME="comment-data-$PR_NUMBER"
+          
+          while [ $ATTEMPT -le $MAX_ATTEMPTS ]; do
+            echo "Attempt $ATTEMPT: Downloading artifact $ARTIFACT_NAME..."
+            if gh run download "$GITHUB_RUN_ID" -n "$ARTIFACT_NAME" --dir ./artifacts; then
+              echo "Artifact downloaded successfully!"
+              mv ./artifacts/comment-data.json ./comment-data.json
+              echo "success=true" >> $GITHUB_OUTPUT
+              exit 0
+            else
+              echo "Artifact not found yet."
+              if [ $ATTEMPT -eq $MAX_ATTEMPTS ]; then
+                echo "Failed to download artifact after $MAX_ATTEMPTS attempts."
+                echo "success=false" >> $GITHUB_OUTPUT
+                exit 1
+              fi
+              sleep 30  # Wait 30 seconds before retrying
+            fi
+            ATTEMPT=$((ATTEMPT + 1))
+          done
+        env:
+          GITHUB_TOKEN: ${{ github.token }}  # Default token, fine for main repo context
+
+      - name: Post comment to external service
+        if: steps.download.outputs.success == 'true'
         env:
           NOT_GITHUB_TOKEN: ${{ vars.NOT_GITHUB_TOKEN }}
         run: |
-          COMMENT_BODY="${{ github.event.client_payload.comment_body }}"
-          PR_NUMBER="${{ github.event.client_payload.pr_number }}"
-          ORG="${{ github.event.client_payload.org }}"
-          REPO="${{ github.event.client_payload.repo }}"
+          COMMENT_DATA=$(cat comment-data.json)
+          COMMENT_BODY=$(echo "$COMMENT_DATA" | jq -r '.comment_body')
+          PR_NUMBER=$(echo "$COMMENT_DATA" | jq -r '.pr_number')
+          ORG=$(echo "$COMMENT_DATA" | jq -r '.org')
+          REPO=$(echo "$COMMENT_DATA" | jq -r '.repo')
           curl -i -X POST https://comment.canitrunquarkus.org/comment \
             -H "not-github-token: ${NOT_GITHUB_TOKEN}" \
             -H "Content-Type: application/json" \
