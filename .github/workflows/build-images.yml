@@ -137,7 +137,7 @@ jobs:
         with:
           name: final-summary-log
           path: final-summary.txt
-      - name: Trigger comment workflow
+      - name: Prepare and upload comment data
         if: always() && github.event_name == 'pull_request'
         run: |
           PR_NUMBER=$(jq --raw-output .pull_request.number "$GITHUB_EVENT_PATH")
@@ -148,9 +148,10 @@ jobs:
           ORG_NAME=$(jq --raw-output .repository.owner.login "$GITHUB_EVENT_PATH")
           REPO_NAME=$(jq --raw-output .repository.name "$GITHUB_EVENT_PATH")
           COMMENT_JSON_STRING=$(jq -Rs '.' < final-summary.txt)
-          curl -X POST \
-            -H "Authorization: Bearer ${{ github.token }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            "https://api.github.com/repos/${ORG_NAME}/${REPO_NAME}/dispatches" \
-            -d "{\"event_type\":\"post_comment\",\"client_payload\":{\"pr_number\":\"$PR_NUMBER\",\"org\":\"$ORG_NAME\",\"repo\":\"$REPO_NAME\",\"comment_body\":$COMMENT_JSON_STRING}}"
-
+          echo "{\"pr_number\":\"$PR_NUMBER\",\"org\":\"$ORG_NAME\",\"repo\":\"$REPO_NAME\",\"comment_body\":$COMMENT_JSON_STRING}" > comment-data.json
+      - name: Upload comment data
+        if: always() && github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v3
+        with:
+          name: comment-data-${{ github.event.pull_request.number }}
+          path: comment-data.json
