@@ -1,0 +1,22 @@
+name: Post Comment
+
+on:
+  repository_dispatch:
+    types: [post_comment]
+
+jobs:
+  post-comment:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Post test summary
+        env:
+          NOT_GITHUB_TOKEN: ${{ vars.NOT_GITHUB_TOKEN }}
+        run: |
+          COMMENT_BODY="${{ github.event.client_payload.comment_body }}"
+          PR_NUMBER="${{ github.event.client_payload.pr_number }}"
+          ORG="${{ github.event.client_payload.org }}"
+          REPO="${{ github.event.client_payload.repo }}"
+          curl -i -X POST https://comment.canitrunquarkus.org/comment \
+            -H "not-github-token: ${NOT_GITHUB_TOKEN}" \
+            -H "Content-Type: application/json" \
+            -d "{\"body\":$COMMENT_BODY,\"org\":\"$ORG\",\"repo\":\"$REPO\",\"id\":\"$PR_NUMBER\"}"
