@@ -68,7 +68,7 @@ jobs:
         echo "Flags:     ${{ steps.buildx.outputs.flags }}"
         echo "Platforms: ${{ steps.buildx.outputs.platforms }}"
     - name: Build ${{ matrix.name }}
-      run: mvn install --projects ${{ matrix.modules }} --also-make -DskipTests ${{ matrix.args }}
+      run: mvn install --projects ${{ matrix.modules }} --also-make ${{ matrix.args }}
     - name: Test ${{ matrix.name }}
       env:
           DOCKER_GHA_BUILDX: true
