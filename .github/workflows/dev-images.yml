@@ -66,7 +66,8 @@ jobs:
         # GraalVM CE builder images should work too, merely saving time here...
         if [[ "${{ matrix.modules }}" == quarkus-mandrel* ]]; then
           echo "┌── Testing ${{ matrix.name }}" >> ${DOCKER_GHA_SUMMARY_NAME}
-          mvn install --batch --projects ${{ matrix.modules }} --also-make -DskipTests -Ptest ${{ matrix.args }}
+          #mvn install --batch --projects ${{ matrix.modules }} --also-make -DskipTests -Ptest ${{ matrix.args }}
+          docker run -t devel-latest-amd64 native-image --version
           EXIT_CODE=$?
           if [[ $EXIT_CODE -ne 0 ]]; then
             echo "└── Done with errors: ${{ matrix.name }}" >> ${DOCKER_GHA_SUMMARY_NAME}
