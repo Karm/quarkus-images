@@ -1,6 +1,10 @@
 name: Dev
 
 on:
+  # Todo remove later
+  pull_request:
+    branches:
+      - main
   deployment:
   schedule:
     - cron: '0 0 * * *'
