@@ -32,7 +32,7 @@ jobs:
             args: ""
           #- name: "mandrel builder images (devel)"
           #  modules: "quarkus-mandrel-builder-image"
-          #  args: "-Pdevel-latest"
+          #  args: "-Pdev-latest"
           #- name: "graalvm ce builder images (latest)"
           #  modules: "quarkus-graalvm-builder-image"
           #  args: ""

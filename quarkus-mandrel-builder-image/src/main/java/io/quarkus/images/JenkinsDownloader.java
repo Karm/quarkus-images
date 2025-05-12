@@ -1,4 +1,4 @@
-/// usr/bin/env jbang "$0" "$@" ; exit $?
+///usr/bin/env jbang "$0" "$@" ; exit $?
 //DEPS com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.15.2
 //DEPS info.picocli:picocli:4.7.4
 package io.quarkus.images;
@@ -87,7 +87,7 @@ public class JenkinsDownloader implements Callable<Integer> {
         } else {
             throw new IllegalArgumentException("Unknown architecture: " + arch);
         }
-        System.out.println("Searching for " + label + " " + JDK_RELEASE + " " + arch + " " + postfix);
+        System.out.println("Searching for " + label + " " + JDK_RELEASE + " " + arch + " " + postfix + " on Jenkins...");
         final ObjectMapper om = new ObjectMapper();
         final JsonNode root = om.readTree(get(BASE_URL + API));
         for (JsonNode config : root.path("activeConfigurations")) {
@@ -102,15 +102,14 @@ public class JenkinsDownloader implements Callable<Integer> {
             if (!m.find()) {
                 continue;
             }
-            final String jdkVersion = m.group("JDKVERSION");
-            final String labelValue = m.group("LABEL");
-            final String jdkRelease = m.group("JDKRELEASE");
-            if (jdkVersion == null) {
+            if (m.group("JDKVERSION") == null) {
                 continue;
             }
+            final String labelValue = m.group("LABEL");
             if (labelValue == null || !labelValue.equalsIgnoreCase(label)) {
                 continue;
             }
+            final String jdkRelease = m.group("JDKRELEASE");
             if (jdkRelease == null || !jdkRelease.equalsIgnoreCase(JDK_RELEASE)) {
                 continue;
             }
@@ -119,7 +118,9 @@ public class JenkinsDownloader implements Callable<Integer> {
             for (JsonNode artifact : artifacts) {
                 final String file = artifact.path("fileName").asText();
                 if (file != null && file.endsWith(postfix)) {
-                    return buildUrl + "artifact/" + file;
+                    final String fileUrl = buildUrl + "artifact/" + file;
+                    System.out.println("Found " + fileUrl);
+                    return fileUrl;
                 }
             }
         }
