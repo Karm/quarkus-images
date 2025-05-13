@@ -34,10 +34,10 @@
                             <args>
                                 <argument>--dockerfile-dir=${project.basedir}/target/docker</argument>
                                 <argument>--ubi-minimal=${ubi8-min.base}</argument>
-                                <argument>--out=quay.io/quarkus/ubi-quarkus-mandrel-builder-image</argument>
+                                <argument>--out=quay.io/karmkarm/ubi-quarkus-mandrel-builder-image</argument>
                                 <argument>--in=${images.file}</argument>
                                 <argument>--dry-run=${jdock.dry-run}</argument>
-                                <argument>--alias=quay.io/quarkus/ubi-quarkus-mandrel-builder-image:__VERSION__-${maven.build.timestamp}</argument>
+                                <argument>--alias=quay.io/karmkarm/ubi-quarkus-mandrel-builder-image:__VERSION__-${maven.build.timestamp}</argument>
                             </args>
                         </configuration>
                     </execution>
@@ -52,10 +52,10 @@
                             <args>
                                 <argument>--dockerfile-dir=${project.basedir}/target/docker</argument>
                                 <argument>--ubi-minimal=${ubi9-min.base}</argument>
-                                <argument>--out=quay.io/quarkus/ubi9-quarkus-mandrel-builder-image</argument>
+                                <argument>--out=quay.io/karmkarm/ubi9-quarkus-mandrel-builder-image</argument>
                                 <argument>--in=${images.file}</argument>
                                 <argument>--dry-run=${jdock.dry-run}</argument>
-                                <argument>--alias=quay.io/quarkus/ubi9-quarkus-mandrel-builder-image:__VERSION__-${maven.build.timestamp}</argument>
+                                <argument>--alias=quay.io/karmkarm/ubi9-quarkus-mandrel-builder-image:__VERSION__-${maven.build.timestamp}</argument>
                             </args>
                         </configuration>
                     </execution>
@@ -95,7 +95,7 @@
             <properties>
                 <jbang.script>${project.build.sourceDirectory}/io/quarkus/images/Test.java</jbang.script>
                 <maven.build.timestamp.format>yyyy-MM-dd</maven.build.timestamp.format>
-                <jdock.alias>quay.io/quarkus/ubi-quarkus-mandrel-builder-image:__VERSION__-${maven.build.timestamp}</jdock.alias>
+                <jdock.alias>quay.io/karmkarm/ubi-quarkus-mandrel-builder-image:__VERSION__-${maven.build.timestamp}</jdock.alias>
             </properties>
         </profile>
         <profile>
