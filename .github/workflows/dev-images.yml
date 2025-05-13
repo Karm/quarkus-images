@@ -20,7 +20,7 @@ jobs:
         include:
           - name: "mandrel builder images (devel)"
             modules: "quarkus-mandrel-builder-image"
-            args: "-Pdev-latest"
+            args: "-Pdev"
 
     steps:
     - name: Re-claim some disk space
@@ -70,7 +70,7 @@ jobs:
         # GraalVM CE builder images should work too, merely saving time here...
         if [[ "${{ matrix.modules }}" == quarkus-mandrel* ]]; then
           echo "┌── Testing ${{ matrix.name }}" >> ${DOCKER_GHA_SUMMARY_NAME}
-          docker run -t dev-latest-amd64 native-image --version
+          docker run -t dev-amd64 native-image --version
           mvn install --batch-mode --projects ${{ matrix.modules }} --also-make -DskipTests -Ptest ${{ matrix.args }}
           EXIT_CODE=$?
           if [[ $EXIT_CODE -ne 0 ]]; then

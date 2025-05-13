@@ -63,7 +63,7 @@ public class Config {
             if (graalvmVersion != null) {
                 final String n;
                 if ("master".equals(graalvmVersion)) {
-                    n = config.image + ":dev-latest";
+                    n = config.image + ":dev";
                 } else {
                     n = config.image + ":" + graalvmVersion + "-java" + javaVersion;
                 }
