@@ -1,10 +1,5 @@
 name: Dev
-
 on:
-  # Todo remove later
-  pull_request:
-    branches:
-      - main
   deployment:
   schedule:
     - cron: '0 0 * * *'
@@ -18,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - name: "mandrel builder images (devel)"
+          - name: "mandrel builder images (dev)"
             modules: "quarkus-mandrel-builder-image"
             args: "-Pdev"
 
@@ -91,6 +86,12 @@ jobs:
     - name: Print ${{ matrix.name}}
       if: always()
       run: docker images
+    - name: Login to Container Registry
+      uses: docker/login-action@v2
+      with:
+        registry: quay.io
+        username: ${{ secrets.QUAY_USER }}
+        password: ${{ secrets.QUAY_TOKEN }}
     - name: Push ${{ matrix.name }}
       run: mvn install --batch-mode --projects ${{ matrix.modules }} -DskipTests -Ppush ${{ matrix.args }}
 
