@@ -99,15 +99,9 @@
             </properties>
         </profile>
         <profile>
-            <id>mandrel-22.x</id>
+            <id>dev</id>
             <properties>
-                <images.file>${project.basedir}/mandrel-22.x.yaml</images.file>
-            </properties>
-        </profile>
-        <profile>
-            <id>mandrel-23.0.x</id>
-            <properties>
-                <images.file>${project.basedir}/mandrel-23.0.x.yaml</images.file>
+                <images.file>${project.basedir}/mandrel-devel.yaml</images.file>
             </properties>
         </profile>
     </profiles>

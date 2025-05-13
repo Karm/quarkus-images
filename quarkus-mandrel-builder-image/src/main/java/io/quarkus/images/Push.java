@@ -1,7 +1,8 @@
-///usr/bin/env jbang "$0" "$@" ; exit $?
+/// usr/bin/env jbang "$0" "$@" ; exit $?
 //DEPS io.quarkus.images:jdock-variant-helper:1.0-SNAPSHOT
 //DEPS info.picocli:picocli:4.7.4
 //SOURCES QuarkusMandrelBuilder.java
+//SOURCES JenkinsDownloader.java
 package io.quarkus.images;
 
 import io.quarkus.images.config.Config;
@@ -58,8 +59,7 @@ public class Push implements Callable<Integer> {
                 img.buildAndPush(groupImageName);
                 alias.ifPresent(a -> {
                     if (!a.isBlank()) {
-                        var name = a.replace("__VERSION__", image.graalvmVersion + "-java" + image.javaVersion);
-                        img.buildAndPush(name);
+                        img.buildAndPush(pickName(a, image));
                     }
                 });
             } else {
@@ -70,14 +70,21 @@ public class Push implements Callable<Integer> {
                 multi.buildAndPush();
                 alias.ifPresent(a -> {
                     if (!a.isBlank()) {
-                        var name = a.replace("__VERSION__", image.graalvmVersion + "-java" + image.javaVersion);
-                        MultiArchImage.createAndPushManifest(name, multi.getLocalImages());
+                        MultiArchImage.createAndPushManifest(pickName(a, image), multi.getLocalImages());
                     }
                 });
             }
             Tag.createTagsIfAny(config, image, true);
         }
         return 0;
+    }
+
+    public static String pickName(String alias, Config.ImageConfig image) {
+        // "master" hardcoded in mandrel-devel.yaml, i.e., HEAD, tip, main, latest...
+        if ("master".equals(image.graalvmVersion)) {
+            return alias.replace("__VERSION__", "dev");
+        }
+        return alias.replace("__VERSION__", image.graalvmVersion + "-java" + image.javaVersion);
     }
 
     public static void main(String... args) {
