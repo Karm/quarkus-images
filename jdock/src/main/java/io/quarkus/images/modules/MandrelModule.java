@@ -85,6 +85,9 @@ public class MandrelModule extends AbstractModule {
             // Leaving the dir there, cleanup not necessary...
             final Path tempDir = Files.createTempDirectory("mandrel_version_check");
             // Mandrel has the file, copied from Temurin.
+            if(!a.store.exists()) {
+                throw new RuntimeException("Artifact not found: " + a.store.getAbsolutePath());
+            }
             final ProcessBuilder pb = new ProcessBuilder(
                     "tar",
                     "--extract",
