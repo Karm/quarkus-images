@@ -105,6 +105,7 @@ public class MandrelModule extends AbstractModule {
                     .findFirst()
                     .orElseThrow(() -> new RuntimeException("JVM_VERSION not found in release file"))
                     .replace("JVM_VERSION=", "").replace("\"", "").trim();
+            System.out.println("JVM_VERSION: " + jvmVersion);
             return parseJDKVersion(jvmVersion);
         } catch (InterruptedException | IOException e) {
             throw new RuntimeException("Unable to extract JDK version from Mandrel distribution tarball.", e);
