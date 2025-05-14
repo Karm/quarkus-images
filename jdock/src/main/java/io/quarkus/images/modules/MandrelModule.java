@@ -93,6 +93,7 @@ public class MandrelModule extends AbstractModule {
                     "--strip-components=1",
                     "*/release");
             pb.environment().put("PATH", System.getenv("PATH"));
+            pb.inheritIO();
             final Process p = pb.start();
             p.waitFor(30, TimeUnit.SECONDS);
             final String jvmVersion = Files.readAllLines(tempDir.resolve("release")) // tiny file <2K
