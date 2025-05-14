@@ -91,6 +91,7 @@ public class MandrelModule extends AbstractModule {
             final ProcessBuilder pb = new ProcessBuilder(
                     "tar",
                     "--extract",
+                    "--wildcards",
                     "--file", a.store.getAbsolutePath(),
                     "--directory", tempDir.toString(),
                     "--strip-components=1",
