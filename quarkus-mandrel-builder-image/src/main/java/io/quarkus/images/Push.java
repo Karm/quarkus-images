@@ -10,6 +10,7 @@ import io.quarkus.images.config.Tag;
 import picocli.CommandLine;
 
 import java.io.File;
+import java.util.Arrays;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -74,7 +75,22 @@ public class Push implements Callable<Integer> {
                     }
                 });
             }
-            Tag.createTagsIfAny(config, image, true);
+            final int[] jdkVersion = new int[] {-1, -1, -1, -1};
+            architectures.values().forEach(buildable -> {
+                int[] v = ((Dockerfile) buildable).context.getJdkVersion();
+                for (int i = 0; i < 4; i++) {
+                    if (jdkVersion[i] == -1) {
+                        jdkVersion[i] = v[i];
+                    } else if (jdkVersion[i] != v[i]) {
+                        throw new IllegalStateException(String.format(
+                                "Inconsistent JDK versions across architectures: %s has different version than previously seen %s",
+                                Arrays.toString(v),
+                                Arrays.toString(jdkVersion)
+                        ));
+                    }
+                }
+            });
+            Tag.createTagsIfAny(config, image, true, jdkVersion);
         }
         return 0;
     }
