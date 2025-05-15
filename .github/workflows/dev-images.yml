@@ -78,7 +78,7 @@ jobs:
       if: always()
       run: |
         docker images
-        cat ${{ github.workspace }}/${{ env.DOCKER_GHA_SUMMARY_NAME }}
+        cat '${{ github.workspace }}/${{ env.DOCKER_GHA_SUMMARY_NAME }}'
     - name: Login to Container Registry
       uses: docker/login-action@v2
       with:
